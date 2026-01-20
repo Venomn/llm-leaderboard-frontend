@@ -2,7 +2,7 @@ import { Table } from "antd"
 import { useState } from "react"
 import { useEffect } from "react"
 
-const serverUrl = 'http://52.79.213.181:3000';
+const serverUrl = 'https://52.79.213.181:3000';
 
 const columns = [
     {
