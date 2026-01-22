@@ -1,32 +1,42 @@
-name: Example workflow for AliyunOSS
-on: [push]
+name: Deploy React to Aliyun OSS + Refresh CDN
+
+on:
+  push:
+    branches: [ main ]          # 推送到 main 分支时触发
+  workflow_dispatch:            # 支持手动触发
+
 jobs:
-    Release:
-        name: Release
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@master
-              with:
-                  fetch-depth: 2
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-            - name: Use Node.js 12.x
-              uses: actions/setup-node@v1
-              with:
-                  node-version: "12.x"
+    steps:
+      # 1. 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Build Project
-              run: npm install && npm run build
+      # 2. 设置 Node.js 环境（根据你的项目 Node 版本调整）
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'      # 或 18、22，根据你的项目
 
-            - name: Deploy OSS
-              uses: taixw2/deploy-aliyun-oss@v1
-              with:
-                  # aliyun config
-                  region: ${{secrets.OSS_ENDPOINT}}
-                  access-key-id: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
-                  access-key-secret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
-                  bucket: ${{ secrets.OSS_BUCKET_NAME }}
-                  secure: true
-                  # deploy config
-                  entry: dist/**/* # glob pattern
-                  remote-dir: /
-                  path-rewrite: ^dist/
+      # 3. 安装依赖并构建
+      - name: Install dependencies & Build
+        run: |
+          npm ci
+          npm run build
+
+      # 4. 安装 ossutil（阿里云官方 OSS 命令行工具）
+      - name: Install aliyun-cli
+        run: |
+            curl -sL https://github.com/aliyun/aliyun-cli/releases/latest/download/aliyun-cli-linux-latest-amd64.tgz | tar xz
+            sudo mv aliyun /usr/local/bin/
+            aliyun configure set \
+            --access-key-id ${{ secrets.ALIYUN_ACCESS_KEY_ID }} \
+            --access-key-secret ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }} \
+            --region cn-shanghai   # 改成你的地域，如 cn-hangzhou
+
+      # 5. 上传到 OSS
+      - name: Upload to OSS
+        run: |
+            aliyun oss cp -r ./dist/ oss://my-bucket-name/ --update --meta x-oss-object-acl:public-read
