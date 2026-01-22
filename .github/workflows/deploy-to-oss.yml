@@ -29,7 +29,7 @@ jobs:
       # 4. 安装 ossutil（阿里云官方 OSS 命令行工具）
       - name: Install ossutil
         run: |
-          wget http://gosspublic.alicdn.com/ossutil/ossutil64
+          wget https://gosspublic.alicdn.com/ossutil/1.7.19/ossutil64
           chmod 755 ossutil64
           mv ossutil64 ossutil
 
