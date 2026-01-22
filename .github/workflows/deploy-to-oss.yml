@@ -26,13 +26,13 @@ jobs:
                   npm ci
                   npm run build
 
-                  - name: Install ossutil automatically
-                  run: |
-                    curl -o install.sh https://raw.githubusercontent.com/aliyun/ossutil/master/install.sh
-                    chmod +x install.sh
-                    ./install.sh
-                    # 安装后 ossutil 命令就在 PATH 中可用
-
+            # 4. 安装 ossutil
+            - name: Install ossutil automatically
+              run: |
+                  curl -o install.sh https://raw.githubusercontent.com/aliyun/ossutil/master/install.sh
+                  chmod +x install.sh
+                  ./install.sh
+            
             # 5. 配置 ossutil（用 Secrets 中的 AccessKey）
             - name: Configure ossutil
               env:
