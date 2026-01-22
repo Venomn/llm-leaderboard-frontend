@@ -1,52 +1,52 @@
 name: Deploy React to Aliyun OSS
 
 on:
-  push:
-    branches: [ main ]          # 推送到 main 分支时触发
-  workflow_dispatch:            # 支持手动触发
+    push:
+        branches: [main] # 推送到 main 分支时触发
+    workflow_dispatch: # 支持手动触发
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+    build-and-deploy:
+        runs-on: ubuntu-latest
 
-    steps:
-      # 1. 检出代码
-      - name: Checkout code
-        uses: actions/checkout@v4
+        steps:
+            # 1. 检出代码
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      # 2. 设置 Node.js 环境（根据你的项目 Node 版本调整）
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'      # 或 18、22，根据你的项目
+            # 2. 设置 Node.js 环境（根据你的项目 Node 版本调整）
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20" # 或 18、22，根据你的项目
 
-      # 3. 安装依赖并构建
-      - name: Install dependencies & Build
-        run: |
-          npm ci
-          npm run build
+            # 3. 安装依赖并构建
+            - name: Install dependencies & Build
+              run: |
+                  npm ci
+                  npm run build
 
-      # 4. 安装 ossutil（阿里云官方 OSS 命令行工具）
-      - name: Install ossutil
-        run: |
-          wget https://gosspublic.alicdn.com/ossutil/1.7.19/ossutil64
-          chmod 755 ossutil64
-          mv ossutil64 ossutil
+                  - name: Install ossutil automatically
+                  run: |
+                    curl -o install.sh https://raw.githubusercontent.com/aliyun/ossutil/master/install.sh
+                    chmod +x install.sh
+                    ./install.sh
+                    # 安装后 ossutil 命令就在 PATH 中可用
 
-      # 5. 配置 ossutil（用 Secrets 中的 AccessKey）
-      - name: Configure ossutil
-        env:
-          ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
-          ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
-          ENDPOINT: ${{ secrets.OSS_ENDPOINT }}
-        run: |
-          ./ossutil config -i $ACCESS_KEY_ID -k $ACCESS_KEY_SECRET -e $ENDPOINT -t no
+            # 5. 配置 ossutil（用 Secrets 中的 AccessKey）
+            - name: Configure ossutil
+              env:
+                  ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+                  ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+                  ENDPOINT: ${{ secrets.OSS_ENDPOINT }}
+              run: |
+                  ./ossutil config -i $ACCESS_KEY_ID -k $ACCESS_KEY_SECRET -e $ENDPOINT -t no
 
-      # 6. 上传 dist 文件夹到 OSS（覆盖旧文件）
-      - name: Upload to OSS
-        env:
-          BUCKET: ${{ secrets.OSS_BUCKET_NAME }}
-        run: |
-          ./ossutil cp -r ./dist/ oss://$BUCKET/ --update --meta x-oss-object-acl:public-read
+            # 6. 上传 dist 文件夹到 OSS（覆盖旧文件）
+            - name: Upload to OSS
+              env:
+                  BUCKET: ${{ secrets.OSS_BUCKET_NAME }}
+              run: |
+                  ./ossutil cp -r ./dist/ oss://$BUCKET/ --update --meta x-oss-object-acl:public-read
 
-      # 7. 刷新 CDN 缓存（让新文件立即生效）
+            # 7. 刷新 CDN 缓存（让新文件立即生效）
