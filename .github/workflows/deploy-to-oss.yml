@@ -29,7 +29,7 @@ jobs:
       # 4. 安装 ossutil（阿里云官方 OSS 命令行工具）
       - name: Install aliyun-cli
         run: |
-            curl -sL https://github.com/aliyun/aliyun-cli/releases/latest/download/aliyun-cli-linux-latest-amd64.tgz | tar xz
+            curl -sL https://github.com/aliyun/aliyun-cli/releases/download/v3.2.7/aliyun-cli-linux-3.2.7-amd64.tgz | tar xz
             sudo mv aliyun /usr/local/bin/
             aliyun configure set \
             --access-key-id ${{ secrets.ALIYUN_ACCESS_KEY_ID }} \
