@@ -39,4 +39,4 @@ jobs:
       # 5. 上传到 OSS
       - name: Upload to OSS
         run: |
-            aliyun oss cp -r ./dist/ oss://llm-leaderboard/ --update --meta x-oss-object-acl:public-read
+            aliyun oss cp -r ./dist/ oss://llm-leaderboard/ --update --recursive
